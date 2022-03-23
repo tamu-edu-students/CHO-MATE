@@ -1,4 +1,5 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Entypo from '@expo/vector-icons/Entypo';
@@ -9,10 +10,21 @@ import colors from '../config/colors';
 import HomeScreen from '../screens/HomeScreen';
 import TestScreen from '../screens/TestScreen';
 import AccountScreen from '../screens/AccountScreen';
+import DispenseScreen from '../screens/DispenseScreen';
 
 const Tab = createBottomTabNavigator();
 
+const screenTab = createNativeStackNavigator();
 
+const HomeNavigator = () => (
+    <screenTab.Navigator
+        screenOptions={{
+            headerShown: false
+        }}>
+        <screenTab.Screen name="Home" component={HomeScreen} />
+        <screenTab.Screen name="Dispense" component={DispenseScreen} />
+    </screenTab.Navigator>
+);
 
 function MyTabs() {
   return (
@@ -34,7 +46,7 @@ function MyTabs() {
                 ...styles.shadow
             }
         }}>
-      <Tab.Screen name="Home" component={HomeScreen} options={{
+      <Tab.Screen name="Home" component={HomeNavigator} options={{
           tabBarIcon: ({focused}) => (
               <View style={{alignItems: 'center', justifyContent: 'center', top: 10}}>
                   <Ionicons size={30} name="home" color={focused ? colors.primary : 'black'} />

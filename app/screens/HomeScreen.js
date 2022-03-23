@@ -11,7 +11,7 @@ import ListItemSeparator from '../components/ListItemSeparator';
 import colors from '../config/colors';
 
 
-function HomeScreen(props) {
+function HomeScreen({navigation}) {
     return (
         <ImageBackground
             blurRadius={10}
@@ -69,7 +69,7 @@ function HomeScreen(props) {
                     </Card.Content>
                 </Card>
                 <View style={{marginTop:40}}>
-                    <AppButton style={{height: 75}} textSize={25} title="Dispense Sugar" onPress={() => alert("Button Presssed!")} />
+                    <AppButton style={{height: 75}} textSize={25} title="Dispense Sugar" onPress={() => navigation.navigate("Dispense")} />
                 </View>
                 
             </View>

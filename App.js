@@ -7,6 +7,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 import WelcomeScreen from './app/screens/WelcomeScreen';
 import MyTabs from './app/navigation/tabs';
+import LoginScreen from './app/screens/LoginScreen';
 
 
 const theme = {
