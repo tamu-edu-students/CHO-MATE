@@ -46,7 +46,7 @@ function MyTabs() {
                 ...styles.shadow
             }
         }}>
-      <Tab.Screen name="Home" component={HomeNavigator} options={{
+      <Tab.Screen name="Home Navigator" component={HomeNavigator} options={{
           tabBarIcon: ({focused}) => (
               <View style={{alignItems: 'center', justifyContent: 'center', top: 10}}>
                   <Ionicons size={30} name="home" color={focused ? colors.primary : 'black'} />
