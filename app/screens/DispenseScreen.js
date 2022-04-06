@@ -3,6 +3,9 @@ import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons"
 import Constants from 'expo-constants';
 import { Card, TextInput } from 'react-native-paper';
+import * as Device from 'expo-device';
+import init from 'react_native_mqtt';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import ListItemSeparator from '../components/ListItemSeparator';
 import colors from '../config/colors';
@@ -12,6 +15,60 @@ function DispenseScreen({navigation}) {
 
     const [liquidText, setLiquidText] = React.useState("");
     const [candyText, setCandyText] = React.useState("");
+
+    init({
+        size: 10000,
+        storageBackend: AsyncStorage,
+        defaultExpires: 1000 * 3600 * 24,
+        enableCache: true,
+        reconnect: true,
+        sync : {
+        }
+    });
+
+
+    function onConnect() {
+    console.log("[MQTT] Connection Successful.");
+    client.subscribe('chomate/juice');
+    }
+
+    function onConnectionLost(responseObject) {
+        if (responseObject.errorCode !== 0) {
+          console.log("[MQTT] Connection Lost. Reason: "+responseObject.errorMessage);
+        }
+    }    
+      
+
+    function onMessageArrived(message) {
+        console.log("[MQTT] Message Received.");
+        console.log("[MQTT] <Message: " + message.payloadString + ">");
+        console.log("[MQTT] <Destination: " + message.destinationName + ">");
+    }
+
+    function buttonPress(candyAmount, liquidAmount) {
+        console.log("Sending message to machine for dispense");
+        const liquid = new Paho.MQTT.Message(candyAmount);
+        const candy = new Paho.MQTT.Message(liquidAmount);
+        const dispense = new Paho.MQTT.Message("DISPENSE");
+
+        liquid.destinationName = 'chomate/liquid';
+        candy.destinationName = 'chomate/candy';
+        dispense.destinationName = 'chomate/dispense';
+
+        client.send(liquid);
+        client.send(candy);
+        client.send(dispense);
+
+        setCandyText("");
+        setLiquidText("");
+
+    }
+
+
+    const client = new Paho.MQTT.Client('driver.cloudmqtt.com', 38763, Device.deviceName);
+    client.onConnectionLost = onConnectionLost;
+    client.onMessageArrived = onMessageArrived;
+    client.connect({ userName: "tvsqdgpg", password:"7hNc0P-Bx048", onSuccess:onConnect, useSSL: true });
 
     return (
         <View style={styles.container}>
@@ -48,7 +105,7 @@ function DispenseScreen({navigation}) {
                             label="Candy Dispense Amount" value={candyText} 
                             onChangeText={candyText => setCandyText(candyText)} />
                         </View>
-                        <View style={[styles.cardItem, {marginTop: -5}]}><AppButton title="Dispense" /></View>                   
+                        <View style={[styles.cardItem, {marginTop: -5}]}><AppButton onPress={() => buttonPress(candyText, liquidText)} title="Dispense" /></View>                   
                     </Card.Content>
                     <Card.Actions>
                     </Card.Actions>
