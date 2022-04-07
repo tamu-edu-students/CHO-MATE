@@ -29,7 +29,13 @@
     "react_native_mqtt": "^1.3.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.12.9"
+    "@babel/core": "^7.12.9",
+    "eslint": "^8.12.0",
+    "eslint-config-universe": "^11.0.0-beta.0",
+    "prettier": "^2.6.2"
+  },
+  "eslintConfig": {
+    "extends": "universe/native"
   },
   "private": true
 }

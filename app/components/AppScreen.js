@@ -1,8 +1,8 @@
+import Constants from 'expo-constants';
+import React from 'react';
+import { StyleSheet, SafeAreaView, View } from 'react-native';
 
-import React from "react";
-import Constants from "expo-constants";
-import { StyleSheet, SafeAreaView, View } from "react-native";
-import colors from "../config/colors";
+import colors from '../config/colors';
 
 function AppScreen({ children, style }) {
   return (

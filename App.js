@@ -1,28 +1,23 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
-import { Provider, DefaultTheme } from "react-native-paper";
 import { NavigationContainer } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+//import { StyleSheet } from 'react-native';
+import { Provider, DefaultTheme } from 'react-native-paper';
 
-
-import WelcomeScreen from './app/screens/WelcomeScreen';
+import colors from './app/config/colors';
 import MyTabs from './app/navigation/tabs';
-import LoginScreen from './app/screens/LoginScreen';
-
 
 const theme = {
   ...DefaultTheme,
   roundness: 2,
   colors: {
     ...DefaultTheme.colors,
-    primary: '#f2556a',
-    accent: '#f1c40f',
+    primary: colors.primary,
+    accent: colors.secondary,
   },
 };
 
 export default function App() {
   return (
-    <Provider>
+    <Provider theme={theme}>
       <NavigationContainer>
         <MyTabs />
       </NavigationContainer>
@@ -30,11 +25,11 @@ export default function App() {
   );
 }
 
-const styles = StyleSheet.create({
+/*(const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
   },
-});
+});*/
