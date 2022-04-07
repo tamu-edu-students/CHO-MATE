@@ -39,7 +39,7 @@ function LoginScreen(props) {
             onChangeText={(emailText) => setEmailText(emailText)}
           />
           <TextInput
-            secureTextEntry={true}
+            secureTextEntry
             selectionColor={colors.secondary}
             underlineColor={colors.secondary}
             activeUnderlineColor={colors.secondary}
