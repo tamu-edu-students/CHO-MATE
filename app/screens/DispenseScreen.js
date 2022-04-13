@@ -3,6 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
+import { addDoc, collection } from 'firebase/firestore';
 import React from 'react';
 import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { Card, Snackbar, TextInput, ActivityIndicator } from 'react-native-paper';
@@ -11,11 +12,14 @@ import init from 'react_native_mqtt';
 import AppButton from '../components/AppButton';
 import ListItemSeparator from '../components/ListItemSeparator';
 import colors from '../config/colors';
+import { auth, db } from '../config/firebase';
 
 function DispenseScreen({ navigation }) {
   let client;
   const [liquidText, setLiquidText] = React.useState('');
   const [candyText, setCandyText] = React.useState('');
+  const [liquidVal, setLiquidVal] = React.useState('');
+  const [candyVal, setCandyVal] = React.useState('');
   const [visible, setVisible] = React.useState(false);
   const [animate, setAnimate] = React.useState(false);
   const onDismissSnackBar = () => setVisible(false);
@@ -46,8 +50,6 @@ function DispenseScreen({ navigation }) {
     client.send(candy);
     client.send(dispense);
 
-    setCandyText('');
-    setLiquidText('');
     setAnimate(true);
   }
 
@@ -55,17 +57,33 @@ function DispenseScreen({ navigation }) {
     if (responseObject.errorCode !== 0) {
       console.log('[MQTT] Connection Lost. Reason: ' + responseObject.errorMessage);
     }
+    if (responseObject.errorCode === 0) {
+      console.log('[MQTT] Disconnected with no errors.');
+    }
   }
 
-  function onMessageArrived(message) {
+  async function onMessageArrived(message) {
     console.log('[MQTT] Message Received.');
     console.log('[MQTT] <Message: ' + message.payloadString + '>');
     console.log('[MQTT] <Destination: ' + message.destinationName + '>');
 
     if (message.payloadString === 'RECEIVED') {
+      try {
+        const docRef = await addDoc(collection(db, 'dispenses'), {
+          liquid: String(liquidText),
+          candy: String(candyText),
+          uid: auth.currentUser?.uid,
+        });
+        console.log('Created document with ID: ', docRef.id);
+      } catch (e) {
+        console.error("Couldn't create document: ", e);
+      }
+      setCandyText('');
+      setLiquidText('');
       setVisible(true);
       setAnimate(false);
       client.disconnect();
+      //console.log('[MQTT] Disconnected.');
     }
   }
 
@@ -84,6 +102,7 @@ function DispenseScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <Snackbar
+        duration={2000}
         style={styles.messageBar}
         visible={visible}
         onDismiss={onDismissSnackBar}
@@ -93,7 +112,7 @@ function DispenseScreen({ navigation }) {
             onDismissSnackBar();
           },
         }}>
-        Success! CHOMATE now dispensing.
+        Success! Your sugar should be dispensed shortly.
       </Snackbar>
       <View style={styles.indicator}>
         <ActivityIndicator size={40} animating={animate} style={{ marginBottom: 10 }} />
@@ -118,6 +137,7 @@ function DispenseScreen({ navigation }) {
             <TextInput
               style={{ width: '90%' }}
               left={<TextInput.Icon name="water-outline" />}
+              theme={{ roundness: 5 }}
               selectionColor={colors.primary}
               underlineColor={colors.primary}
               activeUnderlineColor={colors.primary}
@@ -131,6 +151,7 @@ function DispenseScreen({ navigation }) {
             <TextInput
               style={{ width: '90%' }}
               left={<TextInput.Icon name="circle-outline" />}
+              theme={{ roundness: 5 }}
               selectionColor={colors.secondary}
               underlineColor={colors.secondary}
               activeUnderlineColor={colors.secondary}

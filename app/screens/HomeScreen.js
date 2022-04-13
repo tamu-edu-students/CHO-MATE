@@ -1,14 +1,104 @@
 import { Feather } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
+import * as Device from 'expo-device';
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-import { View, Text, StyleSheet, ImageBackground } from 'react-native';
-import { Card, Avatar, ProgressBar } from 'react-native-paper';
+import { View, Text, StyleSheet, ImageBackground, TouchableOpacity } from 'react-native';
+import { Card, Avatar, ProgressBar, Button } from 'react-native-paper';
+import init from 'react_native_mqtt';
 
 import AppButton from '../components/AppButton';
 import ListItemSeparator from '../components/ListItemSeparator';
+import colors from '../config/colors';
+import { auth } from '../config/firebase';
 
-function HomeScreen({ navigation }) {
+const HomeScreen = React.memo(function HomeScreen({ navigation }) {
+  let client;
+  let connected = false;
+  const [state, setState] = React.useState(false);
+  const [liquid, setLiquid] = React.useState(undefined);
+  const [candy, setCandy] = React.useState(undefined);
+
+  const clearCandy = () => setCandy(undefined);
+  const clearLiquid = () => setLiquid(undefined);
+
+  React.useEffect(() => {
+    const unsubscribe = navigation.addListener('blur', () => {
+      if (connected) {
+        client.disconnect();
+      }
+      setState(false);
+    });
+
+    return unsubscribe;
+  }, [navigation]);
+
+  init({
+    size: 10000,
+    storageBackend: AsyncStorage,
+    defaultExpires: 1000 * 3600 * 24,
+    enableCache: true,
+    reconnect: true,
+    sync: {},
+  });
+
+  function onConnect() {
+    console.log('[MQTT] Connection Successful.');
+    client.subscribe('app/amount/#');
+    setState(true);
+    connected = true;
+  }
+
+  function onConnectionLost(responseObject) {
+    if (responseObject.errorCode !== 0) {
+      console.log('[MQTT] Connection Lost. Reason: ' + responseObject.errorMessage);
+    }
+    if (responseObject.errorCode === 0) {
+      console.log('[MQTT] Disconnected with no errors.');
+    }
+    connected = false;
+  }
+
+  function onMessageArrived(message) {
+    let liquidGood = false;
+    let candyGood = true;
+    console.log('[MQTT] Message Received.');
+    console.log('[MQTT] <Message: ' + message.payloadString + '>');
+    console.log('[MQTT] <Destination: ' + message.destinationName + '>');
+
+    if (message.destinationName === 'app/amount/candy') {
+      setCandy(Number(message.payloadString));
+      candyGood = true;
+    }
+    if (message.destinationName === 'app/amount/liquid') {
+      setLiquid(Number(message.payloadString));
+      liquidGood = true;
+    }
+
+    if (candyGood && liquidGood) {
+      setState(false);
+      client.disconnect();
+    }
+  }
+  function buttonPress(candy, liquid) {
+    clearCandy();
+    clearLiquid();
+    setState(true);
+    console.log(candy);
+    console.log(liquid);
+    // eslint-disable-next-line no-undef
+    client = new Paho.MQTT.Client('driver.cloudmqtt.com', 38763, Device.deviceName);
+    client.onConnectionLost = onConnectionLost;
+    client.onMessageArrived = onMessageArrived;
+    client.connect({
+      userName: 'tvsqdgpg',
+      password: '7hNc0P-Bx048',
+      onSuccess: onConnect,
+      useSSL: true,
+    });
+  }
+
   return (
     <ImageBackground
       blurRadius={10}
@@ -16,7 +106,11 @@ function HomeScreen({ navigation }) {
       source={require('../assets/background.jpg')}>
       <View style={styles.container}>
         <StatusBar style="dark" />
-        <Text style={styles.header}>Welcome Back, Kelton!</Text>
+        <Text style={styles.header}>
+          {auth.currentUser.displayName
+            ? 'Welcome back, ' + String(auth.currentUser.displayName) + '!'
+            : 'Welcome back!'}
+        </Text>
         <Card
           style={{
             marginTop: 10,
@@ -36,14 +130,35 @@ function HomeScreen({ navigation }) {
               <Avatar.Icon style={{ backgroundColor: '#00e1ff' }} size={50} icon="water-outline" />
               <Text style={styles.listHeader}>Liquid Amount:</Text>
             </View>
-            <ProgressBar style={{ marginTop: 10 }} progress={0.6} color="#00e1ff" />
+            <ProgressBar
+              style={{ marginTop: 10 }}
+              indeterminate={state}
+              progress={liquid}
+              color="#00e1ff"
+            />
             <View style={styles.cardItem}>
               <Avatar.Icon style={{ backgroundColor: '#f7886f' }} size={50} icon="circle-outline" />
               <Text style={styles.listHeader}>Candy Amount:</Text>
             </View>
-            <ProgressBar style={{ marginTop: 10 }} progress={0.85} color="#f7886f" />
+            <ProgressBar
+              style={{ marginTop: 10 }}
+              indeterminate={state}
+              progress={candy}
+              color="#f7886f"
+            />
           </Card.Content>
-          <Card.Actions />
+          <Card.Actions style={{ alignItems: 'center', justifyContent: 'center' }}>
+            <TouchableOpacity>
+              <Button
+                onPress={buttonPress}
+                dark
+                mode="contained"
+                color={colors.secondary}
+                labelStyle={{ fontSize: 15 }}>
+                Refresh
+              </Button>
+            </TouchableOpacity>
+          </Card.Actions>
         </Card>
         <Card
           style={{
@@ -77,7 +192,7 @@ function HomeScreen({ navigation }) {
       </View>
     </ImageBackground>
   );
-}
+});
 
 const styles = StyleSheet.create({
   background: {
@@ -88,7 +203,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    paddingTop: Constants.statusBarHeight,
+    marginTop: Constants.statusBarHeight,
   },
   header: {
     fontWeight: 'bold',

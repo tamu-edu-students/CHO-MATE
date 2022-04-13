@@ -25,7 +25,7 @@ const HomeNavigator = () => (
   </screenTab.Navigator>
 );
 
-function MyTabs() {
+function MainNavigation() {
   return (
     <Tab.Navigator
       screenOptions={{
@@ -106,4 +106,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default MyTabs;
+export default MainNavigation;

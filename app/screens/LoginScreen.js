@@ -1,58 +1,89 @@
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { Formik } from 'formik';
 import React from 'react';
-import {
-  StyleSheet,
-  ImageBackground,
-  View,
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-} from 'react-native';
+import { StyleSheet, ImageBackground, View, Image, Button } from 'react-native';
 import { TextInput } from 'react-native-paper';
 
 import AppButton from '../components/AppButton';
+import { FormErrorMessage } from '../components/FormErrorMessage';
 import colors from '../config/colors';
+import { auth } from '../config/firebase';
+import { loginValidationSchema } from '../utils';
 
-function LoginScreen(props) {
-  const [emailText, setEmailText] = React.useState('');
-  const [passwordText, setPasswordText] = React.useState('');
+function LoginScreen({ navigation }) {
+  const [errorState, setErrorState] = React.useState('');
+  const handleLogin = (values) => {
+    const { email, password } = values;
+    signInWithEmailAndPassword(auth, email, password).catch((error) =>
+      setErrorState(error.message)
+    );
+  };
 
   return (
-    <ImageBackground
-      blurRadius={10}
-      style={styles.background}
-      source={require('../assets/background.jpg')}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.container}>
+    <>
+      <ImageBackground
+        blurRadius={10}
+        style={styles.background}
+        source={require('../assets/background.jpg')}>
         <View style={styles.logoContainer}>
           <Image style={styles.logo} source={require('../assets/CHO-Mate-No-Tag.png')} />
           <Image style={styles.tagline} source={require('../assets/CHO-Mate-Name.png')} />
         </View>
-        <View style={styles.textContainer}>
-          <TextInput
-            style={styles.input}
-            selectionColor={colors.primary}
-            underlineColor={colors.primary}
-            activeUnderlineColor={colors.primary}
-            label="Email"
-            value={emailText}
-            onChangeText={(emailText) => setEmailText(emailText)}
-          />
-          <TextInput
-            secureTextEntry
-            selectionColor={colors.secondary}
-            underlineColor={colors.secondary}
-            activeUnderlineColor={colors.secondary}
-            label="Password"
-            value={passwordText}
-            onChangeText={(passwordText) => setPasswordText(passwordText)}
-          />
-        </View>
-        <View style={{ width: '45%' }}>
-          <AppButton textSize={25} title="Login" />
-        </View>
-      </KeyboardAvoidingView>
-    </ImageBackground>
+        <Formik
+          initialValues={{
+            email: '',
+            password: '',
+          }}
+          validationSchema={loginValidationSchema}
+          onSubmit={(values) => handleLogin(values)}>
+          {({ values, touched, errors, handleChange, handleSubmit, handleBlur }) => (
+            <>
+              {/* Input fields */}
+              <View style={styles.textContainer}>
+                <TextInput
+                  style={styles.input}
+                  theme={{ roundness: 5 }}
+                  selectionColor={colors.primary}
+                  underlineColor={colors.primary}
+                  activeUnderlineColor={colors.primary}
+                  autoFocus
+                  keyboardType="email-address"
+                  label="Email"
+                  value={values.email}
+                  onChangeText={handleChange('email')}
+                  onBlur={handleBlur('email')}
+                />
+                <TextInput
+                  theme={{ roundness: 5 }}
+                  secureTextEntry
+                  selectionColor={colors.secondary}
+                  underlineColor={colors.secondary}
+                  activeUnderlineColor={colors.secondary}
+                  label="Password"
+                  value={values.password}
+                  onChangeText={handleChange('password')}
+                  onBlur={handleBlur('password')}
+                />
+              </View>
+              <FormErrorMessage
+                error={errors.email || errors.password}
+                visible={touched.email || touched.password}
+              />
+              {errorState !== '' ? <FormErrorMessage error={errorState} visible /> : null}
+              <View style={{ width: '45%' }}>
+                <AppButton textSize={25} title="Login" onPress={handleSubmit} />
+              </View>
+              <Button
+                color={colors.medium}
+                title="Create a new account"
+                onPress={() => navigation.navigate('Signup')}
+              />
+            </>
+          )}
+        </Formik>
+        {/* Button to navigate to SignupScreen to create a new account */}
+      </ImageBackground>
+    </>
   );
 }
 

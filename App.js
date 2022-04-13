@@ -1,13 +1,11 @@
-import { NavigationContainer } from '@react-navigation/native';
-//import { StyleSheet } from 'react-native';
 import { Provider, DefaultTheme } from 'react-native-paper';
 
 import colors from './app/config/colors';
-import MyTabs from './app/navigation/tabs';
+import RootNavigator from './app/navigation/RootNavigator';
 
 const theme = {
   ...DefaultTheme,
-  roundness: 2,
+  roundness: 25,
   colors: {
     ...DefaultTheme.colors,
     primary: colors.primary,
@@ -18,18 +16,7 @@ const theme = {
 export default function App() {
   return (
     <Provider theme={theme}>
-      <NavigationContainer>
-        <MyTabs />
-      </NavigationContainer>
+      <RootNavigator />
     </Provider>
   );
 }
-
-/*(const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});*/
