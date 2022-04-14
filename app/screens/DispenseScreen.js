@@ -1,6 +1,7 @@
 /* eslint-disable no-undef */
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import { addDoc, collection } from 'firebase/firestore';
@@ -16,10 +17,9 @@ import { auth, db } from '../config/firebase';
 
 function DispenseScreen({ navigation }) {
   let client;
+  let connected = false;
   const [liquidText, setLiquidText] = React.useState('');
   const [candyText, setCandyText] = React.useState('');
-  const [liquidVal, setLiquidVal] = React.useState('');
-  const [candyVal, setCandyVal] = React.useState('');
   const [visible, setVisible] = React.useState(false);
   const [animate, setAnimate] = React.useState(false);
   const onDismissSnackBar = () => setVisible(false);
@@ -44,14 +44,31 @@ function DispenseScreen({ navigation }) {
 
     liquid.destinationName = 'chomate/liquid';
     candy.destinationName = 'chomate/candy';
-    dispense.destinationName = 'chomate/dispense';
+    dispense.destinationName = 'chomate/request';
 
     client.send(liquid);
     client.send(candy);
     client.send(dispense);
 
     setAnimate(true);
+
+    connected = true;
   }
+
+  useFocusEffect(
+    React.useCallback(() => {
+      // Do something when the screen is focused
+
+      return () => {
+        if (connected) {
+          client.disconnect();
+          setAnimate(false);
+          console.log('DISCONNECTING');
+          connected = false;
+        }
+      };
+    }, [])
+  );
 
   function onConnectionLost(responseObject) {
     if (responseObject.errorCode !== 0) {
@@ -60,6 +77,7 @@ function DispenseScreen({ navigation }) {
     if (responseObject.errorCode === 0) {
       console.log('[MQTT] Disconnected with no errors.');
     }
+    connected = false;
   }
 
   async function onMessageArrived(message) {
@@ -133,7 +151,7 @@ function DispenseScreen({ navigation }) {
           </View>
           <ListItemSeparator style={{ marginBottom: 10 }} />
           <View style={styles.cardItem}>
-            <Text style={styles.listHeader}>Liquid Amount:</Text>
+            <Text style={styles.listHeader}>Liquid Amount (Grams):</Text>
             <TextInput
               style={{ width: '90%' }}
               left={<TextInput.Icon name="water-outline" />}
@@ -147,7 +165,7 @@ function DispenseScreen({ navigation }) {
             />
           </View>
           <View style={styles.cardItem}>
-            <Text style={styles.listHeader}>Candy Amount:</Text>
+            <Text style={styles.listHeader}>Candy Amount (Grams):</Text>
             <TextInput
               style={{ width: '90%' }}
               left={<TextInput.Icon name="circle-outline" />}

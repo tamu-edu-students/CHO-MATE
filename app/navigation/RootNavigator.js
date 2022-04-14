@@ -1,6 +1,6 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { onAuthStateChanged } from 'firebase/auth';
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState } from 'react';
 
 import LoadingIndicator from '../components/LoadingIndicator';
 import { auth } from '../config/firebase';

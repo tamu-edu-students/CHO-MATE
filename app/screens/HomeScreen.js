@@ -46,6 +46,12 @@ const HomeScreen = React.memo(function HomeScreen({ navigation }) {
   function onConnect() {
     console.log('[MQTT] Connection Successful.');
     client.subscribe('app/amount/#');
+    // eslint-disable-next-line no-undef
+    const stock = new Paho.MQTT.Message('STOCK');
+    stock.destinationName = 'chomate/request';
+
+    client.send(stock);
+
     setState(true);
     connected = true;
   }

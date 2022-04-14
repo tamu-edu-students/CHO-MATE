@@ -6,9 +6,9 @@ export default {
     slug: 'CHO-MATE',
     version: '1.0.0',
     orientation: 'portrait',
-    icon: './app/assets/icon.png',
+    icon: './app/assets/icon-chomate.png',
     splash: {
-      image: './app/assets/splash.png',
+      image: './app/assets/chomate-splash.png',
       resizeMode: 'contain',
       backgroundColor: '#ffffff',
     },
@@ -17,11 +17,13 @@ export default {
     },
     assetBundlePatterns: ['**/*'],
     ios: {
+      bundleIdentifier: 'com.chomate.chomate',
       supportsTablet: true,
     },
     android: {
+      package: 'com.chomate.chomate',
       adaptiveIcon: {
-        foregroundImage: './app/assets/adaptive-icon.png',
+        foregroundImage: './app/assets/icon-chomate.png',
         backgroundColor: '#FFFFFF',
       },
     },
