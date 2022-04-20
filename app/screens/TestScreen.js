@@ -1,36 +1,46 @@
 import { useFocusEffect } from '@react-navigation/native';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc } from 'firebase/firestore';
 import React from 'react';
-import { View, Text, StyleSheet, RefreshControl, FlatList } from 'react-native';
-import { Divider } from 'react-native-paper';
+import { View, Text, StyleSheet, FlatList, ImageBackground } from 'react-native';
+import { Divider, Headline } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { db, auth } from '../config/firebase';
 
 function TestScreen(props) {
   const [refreshing, setRefreshing] = React.useState(false);
+  const [isRefreshed, setIsRefreshed] = React.useState(false);
   let array = [];
   const [stateArray, setStateArray] = React.useState([]);
 
-  const onRefresh = React.useCallback(() => {
+  const onRefresh = () => {
     setRefreshing(true);
     array = [];
-    testCollection();
+    getData();
     setStateArray(array);
-  });
+    setIsRefreshed(true);
+  }
 
   useFocusEffect(
     React.useCallback(() => {
       array = [];
       setStateArray([]);
+      setIsRefreshed(false);
       return () => {
         array = [];
         setStateArray([]);
+        setIsRefreshed(false);
       };
     }, [])
   );
 
-  async function testCollection() {
+  const ItemDivider = () => {
+    return (
+      <Divider style={{ backgroundColor: 'black', marginTop: 5 }} />
+    );
+  }
+
+  async function getData() {
     const q = query(collection(db, 'dispenses'), where('uid', '==', auth.currentUser.uid));
     const querySnapshot = await getDocs(q);
     querySnapshot.forEach((doc) => {
@@ -39,27 +49,45 @@ function TestScreen(props) {
     setRefreshing(false);
   }
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <ImageBackground
+    blurRadius={10}
+    style={styles.background}
+    source={require('../assets/background.jpg')}>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.headerContainer}>
+        <Text style={styles.header}>Recent Dispensings</Text>
+        <Text style={styles.subheader}>{!isRefreshed ? 'Pull to Refresh' : null}</Text>
+      </View>
       <FlatList
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        contentContainerStyle={styles.container}
+        style={styles.flatlist}
+        keyExtractor={(item, index) => 'key'+index}
+        onRefresh={onRefresh}
+        refreshing={refreshing}
         data={stateArray}
+        extraData={stateArray}
+        ItemSeparatorComponent={ItemDivider}
         renderItem={({ item, index }) => (
           <View style={styles.list}>
             <Text style={styles.font}>Candy: {item.candy === '' ? '0' : item.candy}</Text>
             <Text style={styles.font}>Liquid: {item.liquid === '' ? '0' : item.liquid}</Text>
-            <Divider style={{ backgroundColor: 'black', marginTop: 5 }} />
           </View>
         )}
       />
     </SafeAreaView>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
+  background: {
+    flex: 1,
+    alignItems: 'center',
+  },
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    width: '90%',
+    marginTop: 50,
+    marginBottom: 115,
   },
   list: {
     marginVertical: 5,
@@ -68,6 +96,22 @@ const styles = StyleSheet.create({
     fontSize: 20,
     textTransform: 'uppercase',
   },
+  flatlist: {
+    marginBottom: -35,
+    borderRadius: 20,
+    backgroundColor: 'white',
+  },
+  headerContainer: {
+    alignItems: 'center',
+    marginTop: -50
+  },
+  header: {
+    fontWeight: 'bold',
+    fontSize: 40,
+  },
+  subheader: {
+    fontSize: 20,
+  }
 });
 
 export default TestScreen;

@@ -5,8 +5,10 @@ import { useFocusEffect } from '@react-navigation/native';
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import { addDoc, collection } from 'firebase/firestore';
+import LottieView from 'lottie-react-native';
 import React from 'react';
 import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import FadeInOut from 'react-native-fade-in-out';
 import { Card, Snackbar, TextInput, ActivityIndicator } from 'react-native-paper';
 import init from 'react_native_mqtt';
 
@@ -20,9 +22,10 @@ function DispenseScreen({ navigation }) {
   let connected = false;
   const [liquidText, setLiquidText] = React.useState('');
   const [candyText, setCandyText] = React.useState('');
-  const [visible, setVisible] = React.useState(false);
+  const [snackbar, setSnackbar] = React.useState(false);
+  const [lottie, setLottie] = React.useState(false);
   const [animate, setAnimate] = React.useState(false);
-  const onDismissSnackBar = () => setVisible(false);
+  const onDismissSnackBar = () => setSnackbar(false);
 
   init({
     size: 10000,
@@ -63,12 +66,32 @@ function DispenseScreen({ navigation }) {
         if (connected) {
           client.disconnect();
           setAnimate(false);
+          setSnackbar(false);
           console.log('DISCONNECTING');
           connected = false;
         }
       };
     }, [])
   );
+
+  const ScreenWithLottie = () => {
+    const animation = React.createRef();
+
+    React.useEffect(() => {
+      animation.current.play(0, 170);
+    }, []);
+
+    return (
+      <View style={styles.messageBar}>
+        <LottieView
+          ref={animation}
+          loop={false}
+          style={{ width: 100, height: 100 }}
+          source={require('../assets/animate-checkmark.json')}
+        />
+      </View>
+    );
+  };
 
   function onConnectionLost(responseObject) {
     if (responseObject.errorCode !== 0) {
@@ -85,7 +108,7 @@ function DispenseScreen({ navigation }) {
     console.log('[MQTT] <Message: ' + message.payloadString + '>');
     console.log('[MQTT] <Destination: ' + message.destinationName + '>');
 
-    if (message.payloadString === 'RECEIVED') {
+    if (message.payloadString === 'SUCCESS') {
       try {
         const docRef = await addDoc(collection(db, 'dispenses'), {
           liquid: String(liquidText),
@@ -98,14 +121,22 @@ function DispenseScreen({ navigation }) {
       }
       setCandyText('');
       setLiquidText('');
-      setVisible(true);
       setAnimate(false);
+      setLottie(true);
       client.disconnect();
       //console.log('[MQTT] Disconnected.');
+    }
+    if (message.payloadString === 'FAILED') {
+      setCandyText('');
+      setLiquidText('');
+      setAnimate(false);
+      setLottie(false);
+      setSnackbar(true);
     }
   }
 
   function buttonPress(candyAmount, liquidAmount) {
+    setLottie(false);
     client = new Paho.MQTT.Client('driver.cloudmqtt.com', 38763, Device.deviceName);
     client.onConnectionLost = onConnectionLost;
     client.onMessageArrived = onMessageArrived;
@@ -122,7 +153,7 @@ function DispenseScreen({ navigation }) {
       <Snackbar
         duration={2000}
         style={styles.messageBar}
-        visible={visible}
+        visible={snackbar}
         onDismiss={onDismissSnackBar}
         action={{
           label: 'OK',
@@ -130,12 +161,16 @@ function DispenseScreen({ navigation }) {
             onDismissSnackBar();
           },
         }}>
-        Success! Your sugar should be dispensed shortly.
+        Error dispensing! Check machine for more details.
       </Snackbar>
+
       <View style={styles.indicator}>
-        <ActivityIndicator size={40} animating={animate} style={{ marginBottom: 10 }} />
-        {animate && <Text style={styles.listHeader}>Sending to Machine...</Text>}
+        <FadeInOut visible={animate} duration={500}>
+          <ActivityIndicator size={40} animating={animate} style={{ marginBottom: 10 }} />
+          {animate && <Text style={styles.listHeader}>Sending to Machine...</Text>}
+        </FadeInOut>
       </View>
+
       <Card
         style={{
           marginTop: 10,
@@ -184,6 +219,7 @@ function DispenseScreen({ navigation }) {
         </Card.Content>
         <Card.Actions />
       </Card>
+      {lottie ? <ScreenWithLottie /> : null}
       <View style={styles.backButton}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons size={30} name="arrow-back" />
@@ -239,10 +275,12 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   messageBar: {
-    bottom: 110,
+    //width: 50,
+    //height: 50,
+    bottom: 120,
     position: 'absolute',
-    borderRadius: 25,
-    margin: 30,
+    //borderRadius: 25,
+    //margin: 30,
   },
   indicator: {
     position: 'absolute',
