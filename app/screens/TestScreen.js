@@ -1,5 +1,5 @@
 import { useFocusEffect } from '@react-navigation/native';
-import { collection, query, where, getDocs, doc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, orderBy } from 'firebase/firestore';
 import React from 'react';
 import { View, Text, StyleSheet, FlatList, ImageBackground } from 'react-native';
 import { Divider, Headline } from 'react-native-paper';
@@ -19,7 +19,7 @@ function TestScreen(props) {
     getData();
     setStateArray(array);
     setIsRefreshed(true);
-  }
+  };
 
   useFocusEffect(
     React.useCallback(() => {
@@ -35,13 +35,18 @@ function TestScreen(props) {
   );
 
   const ItemDivider = () => {
-    return (
-      <Divider style={{ backgroundColor: 'black', marginTop: 5 }} />
-    );
-  }
+    return <Divider style={{ backgroundColor: 'black', marginTop: 5 }} />;
+  };
 
   async function getData() {
-    const q = query(collection(db, 'dispenses'), where('uid', '==', auth.currentUser.uid));
+    const document = collection(db, 'dispenses');
+    let q;
+    try {
+      q = query(document, orderBy('date'), where('uid', '==', auth.currentUser.uid));
+    } catch (e) {
+      console.error(e);
+    }
+    //const q = query(document, orderBy('uid'), where('uid', '==', auth.currentUser.uid));
     const querySnapshot = await getDocs(q);
     querySnapshot.forEach((doc) => {
       array.push(doc.data());
@@ -50,30 +55,31 @@ function TestScreen(props) {
   }
   return (
     <ImageBackground
-    blurRadius={10}
-    style={styles.background}
-    source={require('../assets/background.jpg')}>
-    <SafeAreaView style={styles.container}>
-      <View style={styles.headerContainer}>
-        <Text style={styles.header}>Recent Dispensings</Text>
-        <Text style={styles.subheader}>{!isRefreshed ? 'Pull to Refresh' : null}</Text>
-      </View>
-      <FlatList
-        style={styles.flatlist}
-        keyExtractor={(item, index) => 'key'+index}
-        onRefresh={onRefresh}
-        refreshing={refreshing}
-        data={stateArray}
-        extraData={stateArray}
-        ItemSeparatorComponent={ItemDivider}
-        renderItem={({ item, index }) => (
-          <View style={styles.list}>
-            <Text style={styles.font}>Candy: {item.candy === '' ? '0' : item.candy}</Text>
-            <Text style={styles.font}>Liquid: {item.liquid === '' ? '0' : item.liquid}</Text>
-          </View>
-        )}
-      />
-    </SafeAreaView>
+      blurRadius={10}
+      style={styles.background}
+      source={require('../assets/background.jpg')}>
+      <SafeAreaView style={styles.container}>
+        <View style={styles.headerContainer}>
+          <Text style={styles.header}>Recent Dispensings</Text>
+          <Text style={styles.subheader}>{!isRefreshed ? 'Pull to Refresh' : null}</Text>
+        </View>
+        <FlatList
+          style={styles.flatlist}
+          keyExtractor={(item, index) => 'key' + index}
+          onRefresh={onRefresh}
+          refreshing={refreshing}
+          data={stateArray}
+          extraData={stateArray}
+          ItemSeparatorComponent={ItemDivider}
+          renderItem={({ item, index }) => (
+            <View style={styles.list}>
+              <Text style={styles.font}>Candy: {item.candy === '' ? '0' : item.candy}</Text>
+              <Text style={styles.font}>Liquid: {item.liquid === '' ? '0' : item.liquid}</Text>
+              <Text style={styles.font}>Date: {item.date.toDate().toLocaleString()}</Text>
+            </View>
+          )}
+        />
+      </SafeAreaView>
     </ImageBackground>
   );
 }
@@ -103,7 +109,7 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     alignItems: 'center',
-    marginTop: -50
+    marginTop: -50,
   },
   header: {
     fontWeight: 'bold',
@@ -111,7 +117,7 @@ const styles = StyleSheet.create({
   },
   subheader: {
     fontSize: 20,
-  }
+  },
 });
 
 export default TestScreen;

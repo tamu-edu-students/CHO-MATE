@@ -41,8 +41,8 @@ function DispenseScreen({ navigation }) {
     client.subscribe('app/response');
 
     console.log('Sending message to machine for dispense');
-    const liquid = new Paho.MQTT.Message(candyAmount);
-    const candy = new Paho.MQTT.Message(liquidAmount);
+    const liquid = new Paho.MQTT.Message(liquidAmount);
+    const candy = new Paho.MQTT.Message(candyAmount);
     const dispense = new Paho.MQTT.Message('DISPENSE');
 
     liquid.destinationName = 'chomate/liquid';
@@ -114,6 +114,7 @@ function DispenseScreen({ navigation }) {
           liquid: String(liquidText),
           candy: String(candyText),
           uid: auth.currentUser?.uid,
+          date: new Date(),
         });
         console.log('Created document with ID: ', docRef.id);
       } catch (e) {
