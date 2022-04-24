@@ -7,9 +7,9 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import colors from '../config/colors';
 import AccountScreen from '../screens/AccountScreen';
+import DataScreen from '../screens/DataScreen';
 import DispenseScreen from '../screens/DispenseScreen';
 import HomeScreen from '../screens/HomeScreen';
-import TestScreen from '../screens/TestScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -59,7 +59,7 @@ function MainNavigation() {
       />
       <Tab.Screen
         name="Find"
-        component={TestScreen}
+        component={DataScreen}
         options={{
           tabBarIcon: ({ focused }) => (
             <View style={{ alignItems: 'center', justifyContent: 'center', top: 10 }}>
