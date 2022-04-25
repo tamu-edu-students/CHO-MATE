@@ -125,7 +125,6 @@ function DispenseScreen({ navigation }) {
       setAnimate(false);
       setLottie(true);
       client.disconnect();
-      //console.log('[MQTT] Disconnected.');
     }
     if (message.payloadString === 'FAILED') {
       setCandyText('');

@@ -1,5 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import { StatusBar } from 'expo-status-bar';
@@ -10,18 +11,30 @@ import init from 'react_native_mqtt';
 
 import AppButton from '../components/AppButton';
 import ListItemSeparator from '../components/ListItemSeparator';
+import Popup from '../components/Popup';
 import colors from '../config/colors';
 import { auth } from '../config/firebase';
 
 const HomeScreen = React.memo(function HomeScreen({ navigation }) {
   let client;
   let connected = false;
+  let success = false;
   const [state, setState] = React.useState(false);
-  const [liquid, setLiquid] = React.useState(undefined);
-  const [candy, setCandy] = React.useState(undefined);
+  const [dialog, setDialog] = React.useState(false);
+  const [dialogText, setDialogText] = React.useState('Default Text');
+  const [liquid, setLiquid] = React.useState(null);
+  const [candy, setCandy] = React.useState(null);
+  const [welcomeString, setWelcomeString] = React.useState('Welcome back!');
 
-  const clearCandy = () => setCandy(undefined);
-  const clearLiquid = () => setLiquid(undefined);
+  const clearCandy = () => setCandy(null);
+  const clearLiquid = () => setLiquid(null);
+  const hideDialog = () => setDialog(false);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      isAuth();
+    }, [])
+  );
 
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('blur', () => {
@@ -43,6 +56,12 @@ const HomeScreen = React.memo(function HomeScreen({ navigation }) {
     sync: {},
   });
 
+  function isAuth() {
+    if (auth.currentUser.displayName) {
+      setWelcomeString('Welcome back, ' + auth.currentUser.displayName + '!');
+    }
+  }
+
   function onConnect() {
     console.log('[MQTT] Connection Successful.');
     client.subscribe('app/amount/#');
@@ -54,6 +73,7 @@ const HomeScreen = React.memo(function HomeScreen({ navigation }) {
 
     setState(true);
     connected = true;
+    success = true;
   }
 
   function onConnectionLost(responseObject) {
@@ -87,22 +107,39 @@ const HomeScreen = React.memo(function HomeScreen({ navigation }) {
       client.disconnect();
     }
   }
-  function buttonPress(candy, liquid) {
+
+  const errorHandler = () => {
+    if (!connected && !success) {
+      const message = 'Could not connect to server.';
+      console.log('[MQTT] Error. ' + message);
+      setState(false);
+      setDialog(true);
+      setDialogText(message);
+    } else {
+    }
+  };
+
+  function buttonPress() {
     clearCandy();
     clearLiquid();
     setState(true);
-    console.log(candy);
-    console.log(liquid);
     // eslint-disable-next-line no-undef
     client = new Paho.MQTT.Client('driver.cloudmqtt.com', 38763, Device.deviceName);
     client.onConnectionLost = onConnectionLost;
     client.onMessageArrived = onMessageArrived;
-    client.connect({
-      userName: 'tvsqdgpg',
-      password: '7hNc0P-Bx048',
-      onSuccess: onConnect,
-      useSSL: true,
-    });
+    try {
+      console.log('[MQTT] Attemtping to connect...');
+      client.connect({
+        userName: 'tvsqdgpg',
+        password: '7hNc0P-Bx048',
+        onSuccess: onConnect,
+        useSSL: true,
+        timeout: 5,
+      });
+      setTimeout(errorHandler, 10000);
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   return (
@@ -110,13 +147,10 @@ const HomeScreen = React.memo(function HomeScreen({ navigation }) {
       blurRadius={10}
       style={styles.background}
       source={require('../assets/background.jpg')}>
+      <Popup title="ERROR" dialogue={dialogText} visible={dialog} onPress={hideDialog} />
       <View style={styles.container}>
         <StatusBar style="dark" />
-        <Text style={styles.header}>
-          {auth.currentUser.displayName
-            ? 'Welcome back, ' + String(auth.currentUser.displayName) + '!'
-            : 'Welcome back!'}
-        </Text>
+        <Text style={styles.header}>{welcomeString}</Text>
         <Card
           style={{
             marginTop: 10,
@@ -133,24 +167,32 @@ const HomeScreen = React.memo(function HomeScreen({ navigation }) {
             </View>
             <ListItemSeparator />
             <View style={styles.cardItem}>
-              <Avatar.Icon style={{ backgroundColor: '#00e1ff' }} size={50} icon="water-outline" />
+              <Avatar.Icon
+                style={{ backgroundColor: colors.liquid }}
+                size={50}
+                icon="water-outline"
+              />
               <Text style={styles.listHeader}>Liquid Amount:</Text>
             </View>
             <ProgressBar
               style={{ marginTop: 10 }}
               indeterminate={state}
               progress={liquid}
-              color="#00e1ff"
+              color={colors.liquid}
             />
             <View style={styles.cardItem}>
-              <Avatar.Icon style={{ backgroundColor: '#f7886f' }} size={50} icon="circle-outline" />
+              <Avatar.Icon
+                style={{ backgroundColor: colors.candy }}
+                size={50}
+                icon="circle-outline"
+              />
               <Text style={styles.listHeader}>Candy Amount:</Text>
             </View>
             <ProgressBar
               style={{ marginTop: 10 }}
               indeterminate={state}
               progress={candy}
-              color="#f7886f"
+              color={colors.candy}
             />
           </Card.Content>
           <Card.Actions style={{ alignItems: 'center', justifyContent: 'center' }}>
@@ -248,6 +290,12 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '500',
     textTransform: 'uppercase',
+  },
+  errorText: {
+    fontSize: 20,
+  },
+  errorTitle: {
+    fontSize: 23,
   },
 });
 
