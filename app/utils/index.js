@@ -20,3 +20,8 @@ export const passwordResetSchema = Yup.object().shape({
     .label('Email')
     .email('Enter a valid email'),
 });
+
+export const DispenseSchema = Yup.object().shape({
+  liquidText: Yup.string().required().label('Liquid amount'),
+  candyText: Yup.string().required().label('Candy amount'),
+});

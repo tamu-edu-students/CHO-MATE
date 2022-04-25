@@ -4,21 +4,32 @@ import { View, Text, StyleSheet, FlatList, ImageBackground } from 'react-native'
 import { Divider, Avatar } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import Popup from '../components/Popup';
 import colors from '../config/colors';
 import { db, auth } from '../config/firebase';
 
 function DataScreen(props) {
+  const [error, setError] = React.useState(false);
+  const [errorMessage, setErrorMessage] = React.useState('');
   const [refreshing, setRefreshing] = React.useState(false);
-  const [isRefreshed, setIsRefreshed] = React.useState(false);
   let array = [];
   const [stateArray, setStateArray] = React.useState([]);
+
+  const clearError = () => setError(false);
 
   const onRefresh = () => {
     setRefreshing(true);
     array = [];
     getData();
     setStateArray(array);
-    setIsRefreshed(true);
+  };
+
+  const EmptyList = () => {
+    return (
+      <View style={styles.empty}>
+        <Text style={styles.emptyText}>Pull down to refresh</Text>
+      </View>
+    );
   };
 
   const ItemDivider = () => {
@@ -29,9 +40,11 @@ function DataScreen(props) {
     const document = collection(db, 'dispenses');
     let q;
     try {
-      q = query(document, orderBy('date', 'desc'), where('uid', '==', auth.currentUser.uid));
+      q = await query(document, orderBy('date', 'desc'), where('uid', '==', auth.currentUser.uid));
     } catch (e) {
-      console.error(e);
+      console.log(e.message);
+      setErrorMessage(e.message);
+      setError(true);
     }
     const querySnapshot = await getDocs(q);
     querySnapshot.forEach((doc) => {
@@ -45,9 +58,9 @@ function DataScreen(props) {
       style={styles.background}
       source={require('../assets/background.jpg')}>
       <SafeAreaView style={styles.container}>
+        <Popup title="ERROR" dialogue={errorMessage} visible={error} onPress={clearError} />
         <View style={styles.headerContainer}>
           <Text style={styles.header}>Recent Dispensings</Text>
-          <Text style={styles.subheader}>{!isRefreshed ? 'Pull to Refresh' : null}</Text>
         </View>
         <View style={styles.flatlistContainer}>
           <FlatList
@@ -57,6 +70,8 @@ function DataScreen(props) {
             refreshing={refreshing}
             data={stateArray}
             extraData={stateArray}
+            ListEmptyComponent={EmptyList}
+            contentContainerStyle={{ flexGrow: 1 }}
             ItemSeparatorComponent={ItemDivider}
             renderItem={({ item, index }) => (
               <View style={styles.listContainer}>
@@ -114,7 +129,7 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '90%',
     marginTop: 50,
-    marginBottom: 115,
+    marginBottom: 120,
   },
   date: {
     flex: 1,
@@ -161,6 +176,7 @@ const styles = StyleSheet.create({
     paddingRight: 15,
   },
   flatlist: {
+    flex: 1,
     marginBottom: -35,
     borderRadius: 20,
     backgroundColor: 'white',
@@ -182,9 +198,21 @@ const styles = StyleSheet.create({
   header: {
     fontWeight: 'bold',
     fontSize: 40,
+    marginBottom: 10,
   },
   subheader: {
     fontSize: 20,
+    marginBottom: 10,
+  },
+  empty: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyText: {
+    fontSize: 20,
+    textTransform: 'uppercase',
+    color: 'grey',
   },
 });
 

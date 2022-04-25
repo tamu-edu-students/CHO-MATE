@@ -5,6 +5,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import { addDoc, collection } from 'firebase/firestore';
+import { Formik } from 'formik';
 import LottieView from 'lottie-react-native';
 import React from 'react';
 import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
@@ -13,15 +14,17 @@ import { Card, Snackbar, TextInput, ActivityIndicator } from 'react-native-paper
 import init from 'react_native_mqtt';
 
 import AppButton from '../components/AppButton';
+import { FormErrorMessage } from '../components/FormErrorMessage';
 import ListItemSeparator from '../components/ListItemSeparator';
 import colors from '../config/colors';
 import { auth, db } from '../config/firebase';
+import { DispenseSchema } from '../utils';
 
 function DispenseScreen({ navigation }) {
   let client;
   let connected = false;
-  const [liquidText, setLiquidText] = React.useState('');
-  const [candyText, setCandyText] = React.useState('');
+  let liquidVal,
+    candyVal = 0;
   const [snackbar, setSnackbar] = React.useState(false);
   const [lottie, setLottie] = React.useState(false);
   const [animate, setAnimate] = React.useState(false);
@@ -52,6 +55,9 @@ function DispenseScreen({ navigation }) {
     client.send(liquid);
     client.send(candy);
     client.send(dispense);
+
+    candyVal = candyAmount;
+    liquidVal = liquidAmount;
 
     setAnimate(true);
 
@@ -111,8 +117,8 @@ function DispenseScreen({ navigation }) {
     if (message.payloadString === 'SUCCESS') {
       try {
         const docRef = await addDoc(collection(db, 'dispenses'), {
-          liquid: String(liquidText),
-          candy: String(candyText),
+          liquid: String(liquidVal),
+          candy: String(candyVal),
           uid: auth.currentUser?.uid,
           date: new Date(),
         });
@@ -120,15 +126,11 @@ function DispenseScreen({ navigation }) {
       } catch (e) {
         console.error("Couldn't create document: ", e);
       }
-      setCandyText('');
-      setLiquidText('');
       setAnimate(false);
       setLottie(true);
       client.disconnect();
     }
     if (message.payloadString === 'FAILED') {
-      setCandyText('');
-      setLiquidText('');
       setAnimate(false);
       setLottie(false);
       setSnackbar(true);
@@ -163,62 +165,79 @@ function DispenseScreen({ navigation }) {
         }}>
         Error dispensing! Check machine for more details.
       </Snackbar>
-
       <View style={styles.indicator}>
         <FadeInOut visible={animate} duration={500}>
           <ActivityIndicator size={40} animating={animate} style={{ marginBottom: 10 }} />
           {animate && <Text style={styles.listHeader}>Sending to Machine...</Text>}
         </FadeInOut>
       </View>
-
-      <Card
-        style={{
-          marginTop: 10,
-          height: '45%',
-          width: 350,
-          borderRadius: 30,
-          backgroundColor: '#edfffd',
-          ...styles.shadow,
+      <Formik
+        initialValues={{
+          liquidText: '',
+          candyText: '',
+        }}
+        validationSchema={DispenseSchema}
+        onSubmit={(values, { resetForm }) => {
+          buttonPress(values.candyText, values.liquidText);
+          resetForm();
         }}>
-        <Card.Content>
-          <View style={styles.cardHeader}>
-            <Text style={styles.title}>Dispense Sugar</Text>
-          </View>
-          <ListItemSeparator style={{ marginBottom: 10 }} />
-          <View style={styles.cardItem}>
-            <Text style={styles.listHeader}>Liquid Amount (Grams):</Text>
-            <TextInput
-              style={{ width: '90%' }}
-              left={<TextInput.Icon name="water-outline" />}
-              theme={{ roundness: 5 }}
-              selectionColor={colors.primary}
-              underlineColor={colors.primary}
-              activeUnderlineColor={colors.primary}
-              label="Liquid Dispense Amount"
-              value={liquidText}
-              onChangeText={(liquidText) => setLiquidText(liquidText)}
-            />
-          </View>
-          <View style={styles.cardItem}>
-            <Text style={styles.listHeader}>Candy Amount (Grams):</Text>
-            <TextInput
-              style={{ width: '90%' }}
-              left={<TextInput.Icon name="circle-outline" />}
-              theme={{ roundness: 5 }}
-              selectionColor={colors.secondary}
-              underlineColor={colors.secondary}
-              activeUnderlineColor={colors.secondary}
-              label="Candy Dispense Amount"
-              value={candyText}
-              onChangeText={(candyText) => setCandyText(candyText)}
-            />
-          </View>
-          <View style={[styles.cardItem, { marginTop: -5 }]}>
-            <AppButton onPress={() => buttonPress(candyText, liquidText)} title="Dispense" />
-          </View>
-        </Card.Content>
-        <Card.Actions />
-      </Card>
+        {({ values, touched, errors, handleChange, handleSubmit, handleBlur }) => (
+          <Card
+            style={{
+              marginTop: 10,
+              height: '50%',
+              width: 350,
+              borderRadius: 30,
+              backgroundColor: '#edfffd',
+              ...styles.shadow,
+            }}>
+            <Card.Content>
+              <View style={styles.cardHeader}>
+                <Text style={styles.title}>Dispense Sugar</Text>
+              </View>
+              <ListItemSeparator style={{ marginBottom: 10 }} />
+              <View style={styles.cardItem}>
+                <Text style={styles.listHeader}>Liquid Amount (Grams):</Text>
+                <TextInput
+                  style={{ width: '90%' }}
+                  left={<TextInput.Icon name="water-outline" />}
+                  theme={{ roundness: 5 }}
+                  selectionColor={colors.primary}
+                  underlineColor={colors.primary}
+                  activeUnderlineColor={colors.primary}
+                  label="Liquid Dispense Amount"
+                  value={values.liquidText}
+                  onChangeText={handleChange('liquidText')}
+                />
+                <View style={styles.liquidError}>
+                  <FormErrorMessage error={errors.liquidText} visible={errors.liquidText} />
+                </View>
+              </View>
+              <View style={styles.cardItem}>
+                <Text style={styles.listHeader}>Candy Amount (Grams):</Text>
+                <TextInput
+                  style={{ width: '90%' }}
+                  left={<TextInput.Icon name="circle-outline" />}
+                  theme={{ roundness: 5 }}
+                  selectionColor={colors.secondary}
+                  underlineColor={colors.secondary}
+                  activeUnderlineColor={colors.secondary}
+                  label="Candy Dispense Amount"
+                  value={values.candyText}
+                  onChangeText={handleChange('candyText')}
+                />
+                <View style={styles.candyError}>
+                  <FormErrorMessage error={errors.candyText} visible={errors.candyText} />
+                </View>
+              </View>
+              <View style={[styles.cardItem, { marginTop: 35 }]}>
+                <AppButton onPress={handleSubmit} title="Dispense" />
+              </View>
+            </Card.Content>
+            <Card.Actions />
+          </Card>
+        )}
+      </Formik>
       {lottie ? <ScreenWithLottie /> : null}
       <View style={styles.backButton}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -275,17 +294,21 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   messageBar: {
-    //width: 50,
-    //height: 50,
-    bottom: 120,
+    bottom: 105,
     position: 'absolute',
-    //borderRadius: 25,
-    //margin: 30,
   },
   indicator: {
     position: 'absolute',
     bottom: 120,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  liquidError: {
+    position: 'absolute',
+    top: 90,
+  },
+  candyError: {
+    position: 'absolute',
+    top: 90,
   },
 });

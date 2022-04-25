@@ -46,7 +46,7 @@ function LoginScreen({ navigation }) {
           }}
           validationSchema={loginValidationSchema}
           onSubmit={(values) => handleLogin(values)}>
-          {({ values, touched, errors, handleChange, handleSubmit, handleBlur }) => (
+          {({ values, errors, handleChange, handleSubmit, handleBlur }) => (
             <>
               {/* Input fields */}
               <View style={styles.textContainer}>
@@ -79,7 +79,7 @@ function LoginScreen({ navigation }) {
               </View>
               <FormErrorMessage
                 error={errors.email || errors.password}
-                visible={touched.email || touched.password}
+                visible={errors.email || errors.password}
               />
               {errorState !== '' ? <FormErrorMessage error={errorState} visible /> : null}
               <View style={{ width: '45%' }}>
