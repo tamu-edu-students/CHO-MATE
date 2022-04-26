@@ -123,7 +123,7 @@ function DataScreen(props) {
                     icon="water-outline"
                   />
                   <Text style={styles.fontLiquid}>LIQUID:</Text>
-                  <Text style={styles.fontLiquidAmount}>{item.liquid}g</Text>
+                  <Text style={styles.fontLiquidAmount}>{item.liquid}mL</Text>
                   <Avatar.Icon
                     style={{
                       backgroundColor: colors.candy,

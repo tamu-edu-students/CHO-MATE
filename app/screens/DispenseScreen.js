@@ -197,7 +197,7 @@ function DispenseScreen({ navigation }) {
               </View>
               <ListItemSeparator style={{ marginBottom: 10 }} />
               <View style={styles.cardItem}>
-                <Text style={styles.listHeader}>Liquid Amount (Grams):</Text>
+                <Text style={styles.listHeader}>Liquid Amount (Milliliters):</Text>
                 <TextInput
                   style={{ width: '90%' }}
                   left={<TextInput.Icon name="water-outline" />}
