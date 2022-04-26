@@ -168,7 +168,7 @@ function DispenseScreen({ navigation }) {
       <View style={styles.indicator}>
         <FadeInOut visible={animate} duration={500}>
           <ActivityIndicator size={40} animating={animate} style={{ marginBottom: 10 }} />
-          {animate && <Text allowFontScaling={false} style={styles.listHeader}>Sending to Machine...</Text>}
+          {animate && <Text  style={styles.listHeader}>Sending to Machine...</Text>}
         </FadeInOut>
       </View>
       <Formik
@@ -193,11 +193,11 @@ function DispenseScreen({ navigation }) {
             }}>
             <Card.Content>
               <View style={styles.cardHeader}>
-                <Text allowFontScaling={false} style={styles.title}>Dispense Sugar</Text>
+                <Text  style={styles.title}>Dispense Sugar</Text>
               </View>
               <ListItemSeparator style={{ marginBottom: 10 }} />
               <View style={styles.cardItem}>
-                <Text allowFontScaling={false} style={styles.listHeader}>Liquid Amount (Milliliters):</Text>
+                <Text  style={styles.listHeader}>Liquid Amount (Milliliters):</Text>
                 <TextInput
                   style={{ width: '90%' }}
                   left={<TextInput.Icon name="water-outline" />}
@@ -214,7 +214,7 @@ function DispenseScreen({ navigation }) {
                 </View>
               </View>
               <View style={styles.cardItem}>
-                <Text allowFontScaling={false} style={styles.listHeader}>Candy Amount (Grams):</Text>
+                <Text  style={styles.listHeader}>Candy Amount (Grams):</Text>
                 <TextInput
                   style={{ width: '90%' }}
                   left={<TextInput.Icon name="circle-outline" />}

@@ -2,6 +2,7 @@ import { signOut } from 'firebase/auth';
 import React from 'react';
 import { View, Text, StyleSheet, ImageBackground } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AnimatedLottieView from 'lottie-react-native';
 
 import AppButton from '../components/AppButton';
 import { auth } from '../config/firebase';
@@ -12,6 +13,7 @@ const reauthenticate = (currentPassword) => {
 
   return user.reauthenticateWithCredential(cred);
 };
+
 
 const changePassword = (currentPassword, newPassword) => {
   reauthenticate(currentPassword);
@@ -44,6 +46,13 @@ function AccountScreen({ navigate }) {
         <View style={{ width: '45%' }}>
           <AppButton title="Sign Out" onPress={() => signOut(auth)} />
         </View>
+        <AnimatedLottieView
+            autoPlay
+            loop
+            style={{ height: 200, width: 200, marginTop: 10 }}
+            speed={1.1}
+            source={require('../assets/empty-data.json')}
+          />
       </SafeAreaView>
     </ImageBackground>
   );

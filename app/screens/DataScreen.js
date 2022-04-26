@@ -31,7 +31,7 @@ function DataScreen(props) {
     if (!isRefreshed) {
       return (
         <View style={styles.empty}>
-          <Text allowFontScaling={false} style={styles.emptyText}>Pull down to refresh</Text>
+          <Text  style={styles.emptyText}>Pull down to refresh</Text>
           <AnimatedLottieView
             autoPlay
             loop
@@ -44,7 +44,7 @@ function DataScreen(props) {
     } else {
       return (
         <View style={styles.empty}>
-          <Text allowFontScaling={false} style={styles.emptyText}>No data to show</Text>
+          <Text  style={styles.emptyText}>No data to show</Text>
           <AnimatedLottieView
             autoPlay
             loop
@@ -85,7 +85,7 @@ function DataScreen(props) {
       <SafeAreaView style={styles.container}>
         <Popup title="ERROR" dialogue={errorMessage} visible={error} onPress={clearError} />
         <View style={styles.headerContainer}>
-          <Text allowFontScaling={false} style={styles.header}>Recent Data</Text>
+          <Text  style={styles.header}>Recent Data</Text>
         </View>
         <View style={styles.flatlistContainer}>
           <FlatList
@@ -122,8 +122,8 @@ function DataScreen(props) {
                     size={45}
                     icon="water-outline"
                   />
-                  <Text allowFontScaling={false} style={styles.fontLiquid}>LIQUID:</Text>
-                  <Text allowFontScaling={false} style={styles.fontLiquidAmount}>{item.liquid}mL</Text>
+                  <Text  style={styles.fontLiquid}>LIQUID:</Text>
+                  <Text  style={styles.fontLiquidAmount}>{item.liquid}mL</Text>
                   <Avatar.Icon
                     style={{
                       backgroundColor: colors.candy,
@@ -133,8 +133,8 @@ function DataScreen(props) {
                     size={45}
                     icon="circle-outline"
                   />
-                  <Text allowFontScaling={false} style={styles.fontCandy}>CANDY:</Text>
-                  <Text allowFontScaling={false} style={styles.fontCandyAmount}>{item.candy}g</Text>
+                  <Text  style={styles.fontCandy}>CANDY:</Text>
+                  <Text  style={styles.fontCandyAmount}>{item.candy}g</Text>
                 </View>
               </View>
             )}

@@ -163,7 +163,7 @@ const HomeScreen = React.memo(function HomeScreen({ navigation }) {
           <Card.Content>
             <View style={styles.cardHeader}>
               <Feather style={{ paddingHorizontal: 10 }} name="info" size={40} />
-              <Text allowFontScaling={false} style={styles.title}>Machine Status</Text>
+              <Text  style={styles.title}>Machine Status</Text>
             </View>
             <ListItemSeparator />
             <View style={styles.cardItem}>
@@ -172,7 +172,7 @@ const HomeScreen = React.memo(function HomeScreen({ navigation }) {
                 size={50}
                 icon="water-outline"
               />
-              <Text allowFontScaling={false} style={styles.listHeader}>Liquid Amount:</Text>
+              <Text  style={styles.listHeader}>Liquid Amount:</Text>
             </View>
             <ProgressBar
               style={{ marginTop: 10 }}
@@ -186,7 +186,7 @@ const HomeScreen = React.memo(function HomeScreen({ navigation }) {
                 size={50}
                 icon="circle-outline"
               />
-              <Text allowFontScaling={false} style={styles.listHeader}>Candy Amount:</Text>
+              <Text  style={styles.listHeader}>Candy Amount:</Text>
             </View>
             <ProgressBar
               style={{ marginTop: 10 }}
@@ -220,12 +220,12 @@ const HomeScreen = React.memo(function HomeScreen({ navigation }) {
           <Card.Content>
             <View style={styles.cardHeader}>
               <Feather style={{ paddingHorizontal: 10 }} name="droplet" size={30} />
-              <Text allowFontScaling={false} style={[styles.title, { fontSize: 20 }]}>Glucose Reading</Text>
+              <Text  style={[styles.title, { fontSize: 20 }]}>Glucose Reading</Text>
             </View>
             <ListItemSeparator />
             <View style={{ alignItems: 'center', justifyContent: 'center', flexDirection: 'row' }}>
-              <Text allowFontScaling={false} style={{ fontSize: 70, marginTop: 7 }}>130</Text>
-              <Text allowFontScaling={false} style={{ fontSize: 20, marginTop: 30 }}>mg/dl</Text>
+              <Text  style={{ fontSize: 70, marginTop: 7 }}>130</Text>
+              <Text  style={{ fontSize: 20, marginTop: 30 }}>mg/dl</Text>
             </View>
           </Card.Content>
         </Card>
