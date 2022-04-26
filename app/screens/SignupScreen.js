@@ -21,7 +21,13 @@ function SignupScreen({ navigation }) {
           displayName: String(name),
         })
       )
-      .catch((error) => setErrorState(error.message));
+      .catch((error) => {
+        if (error.code === 'auth/email-already-in-use') {
+          setErrorState('Error: User already exists. Try logging in instead.');
+        } else {
+          setErrorState(error.message);
+        }
+      });
   };
 
   React.useEffect(() => {
@@ -39,7 +45,6 @@ function SignupScreen({ navigation }) {
         <Image style={styles.logo} source={require('../assets/CHO-Mate-No-Tag.png')} />
         <Image style={styles.tagline} source={require('../assets/CHO-Mate-Name.png')} />
       </View>
-      {/* Formik Wrapper */}
       <Formik
         initialValues={{
           name: '',
@@ -51,7 +56,6 @@ function SignupScreen({ navigation }) {
         onSubmit={(values) => handleSignup(values)}>
         {({ values, touched, errors, handleChange, handleSubmit, handleBlur }) => (
           <>
-            {/* Input fields */}
             <View style={styles.textContainer}>
               <TextInput
                 theme={{ roundness: 5 }}
@@ -110,7 +114,6 @@ function SignupScreen({ navigation }) {
           </>
         )}
       </Formik>
-      {/* Button to navigate to SignupScreen to create a new account */}
       <Button color={colors.medium} title="Login" onPress={() => navigation.goBack()} />
     </ImageBackground>
   );
