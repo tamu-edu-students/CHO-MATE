@@ -1,5 +1,5 @@
 import { Provider, DefaultTheme } from 'react-native-paper';
-
+import { Text } from 'react-native';
 import colors from './app/config/colors';
 import RootNavigator from './app/navigation/RootNavigator';
 
