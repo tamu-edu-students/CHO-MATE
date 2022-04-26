@@ -31,7 +31,7 @@ function DataScreen(props) {
     if (!isRefreshed) {
       return (
         <View style={styles.empty}>
-          <Text  style={styles.emptyText}>Pull down to refresh</Text>
+          <Text style={styles.emptyText}>Pull down to refresh</Text>
           <AnimatedLottieView
             autoPlay
             loop
@@ -44,7 +44,7 @@ function DataScreen(props) {
     } else {
       return (
         <View style={styles.empty}>
-          <Text  style={styles.emptyText}>No data to show</Text>
+          <Text style={styles.emptyText}>No data to show</Text>
           <AnimatedLottieView
             autoPlay
             loop
@@ -73,7 +73,7 @@ function DataScreen(props) {
     }
     const querySnapshot = await getDocs(q);
     querySnapshot.forEach((doc) => {
-      array.push(doc.data());
+      array.push({ ...doc.data(), key: doc.id });
     });
     setRefreshing(false);
   }
@@ -85,12 +85,11 @@ function DataScreen(props) {
       <SafeAreaView style={styles.container}>
         <Popup title="ERROR" dialogue={errorMessage} visible={error} onPress={clearError} />
         <View style={styles.headerContainer}>
-          <Text  style={styles.header}>Recent Data</Text>
+          <Text style={styles.header}>Recent Data</Text>
         </View>
         <View style={styles.flatlistContainer}>
           <FlatList
             style={styles.flatlist}
-            keyExtractor={(item, index) => 'key' + index}
             onRefresh={onRefresh}
             refreshing={refreshing}
             data={stateArray}
@@ -122,8 +121,8 @@ function DataScreen(props) {
                     size={45}
                     icon="water-outline"
                   />
-                  <Text  style={styles.fontLiquid}>LIQUID:</Text>
-                  <Text  style={styles.fontLiquidAmount}>{item.liquid}mL</Text>
+                  <Text style={styles.fontLiquid}>LIQUID:</Text>
+                  <Text style={styles.fontLiquidAmount}>{item.liquid}mL</Text>
                   <Avatar.Icon
                     style={{
                       backgroundColor: colors.candy,
@@ -133,8 +132,8 @@ function DataScreen(props) {
                     size={45}
                     icon="circle-outline"
                   />
-                  <Text  style={styles.fontCandy}>CANDY:</Text>
-                  <Text  style={styles.fontCandyAmount}>{item.candy}g</Text>
+                  <Text style={styles.fontCandy}>CANDY:</Text>
+                  <Text style={styles.fontCandyAmount}>{item.candy}g</Text>
                 </View>
               </View>
             )}
