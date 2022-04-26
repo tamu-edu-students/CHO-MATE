@@ -6,6 +6,19 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AppButton from '../components/AppButton';
 import { auth } from '../config/firebase';
 
+const reauthenticate = (currentPassword) => {
+  const user = auth.currentUser;
+  const cred = auth.EmailAuthProvider.credential(user.email, currentPassword);
+
+  return user.reauthenticateWithCredential(cred);
+};
+
+const changePassword = (currentPassword, newPassword) => {
+  reauthenticate(currentPassword);
+  const user = auth.currentUser;
+  user.updatePassword(newPassword);
+};
+
 function AccountScreen({ navigate }) {
   return (
     <ImageBackground

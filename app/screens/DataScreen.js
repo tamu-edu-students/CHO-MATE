@@ -1,4 +1,5 @@
 import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import AnimatedLottieView from 'lottie-react-native';
 import React from 'react';
 import { View, Text, StyleSheet, FlatList, ImageBackground } from 'react-native';
 import { Divider, Avatar } from 'react-native-paper';
@@ -11,6 +12,7 @@ import { db, auth } from '../config/firebase';
 function DataScreen(props) {
   const [error, setError] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState('');
+  const [isRefreshed, setIsRefreshed] = React.useState(false);
   const [refreshing, setRefreshing] = React.useState(false);
   let array = [];
   const [stateArray, setStateArray] = React.useState([]);
@@ -22,14 +24,37 @@ function DataScreen(props) {
     array = [];
     getData();
     setStateArray(array);
+    setIsRefreshed(true);
   };
 
   const EmptyList = () => {
-    return (
-      <View style={styles.empty}>
-        <Text style={styles.emptyText}>Pull down to refresh</Text>
-      </View>
-    );
+    if (!isRefreshed) {
+      return (
+        <View style={styles.empty}>
+          <Text style={styles.emptyText}>Pull down to refresh</Text>
+          <AnimatedLottieView
+            autoPlay
+            loop
+            style={{ height: 150, width: 150, marginTop: -10 }}
+            speed={1.1}
+            source={require('../assets/swipe-down.json')}
+          />
+        </View>
+      );
+    } else {
+      return (
+        <View style={styles.empty}>
+          <Text style={styles.emptyText}>No data to show</Text>
+          <AnimatedLottieView
+            autoPlay
+            loop
+            style={{ height: 150, width: 150, marginTop: 0 }}
+            speed={1.1}
+            source={require('../assets/empty-data.json')}
+          />
+        </View>
+      );
+    }
   };
 
   const ItemDivider = () => {
@@ -60,7 +85,7 @@ function DataScreen(props) {
       <SafeAreaView style={styles.container}>
         <Popup title="ERROR" dialogue={errorMessage} visible={error} onPress={clearError} />
         <View style={styles.headerContainer}>
-          <Text style={styles.header}>Recent Dispensings</Text>
+          <Text style={styles.header}>Recent Data</Text>
         </View>
         <View style={styles.flatlistContainer}>
           <FlatList
@@ -139,7 +164,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   dateText: {
-    color: 'grey',
+    color: colors.grey,
     marginRight: 5,
     fontSize: 18,
   },

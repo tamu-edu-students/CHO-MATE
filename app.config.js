@@ -13,15 +13,15 @@ export default {
       backgroundColor: '#ffffff',
     },
     updates: {
-      fallbackToCacheTimeout: 0,
+      fallbackToCacheTimeout: 10,
     },
-    assetBundlePatterns: ['**/*'],
+    assetBundlePatterns: ['assets/*'],
     ios: {
-      bundleIdentifier: 'com.chomate.chomate',
+      bundleIdentifier: 'com.expo.chomate.chomate',
       supportsTablet: true,
     },
     android: {
-      package: 'com.chomate.chomate',
+      package: 'com.expo.chomate.chomate',
       adaptiveIcon: {
         foregroundImage: './app/assets/icon-chomate.png',
         backgroundColor: '#FFFFFF',
