@@ -3,7 +3,7 @@
 This is the CHO-MATE Hypoglycemic Center Repository.
 
 <p align="center">
-  <img width="960" height="480" src="/Documents/CHO-MATE-Banner.png">
+  <img width="640" height="320" src="/Documents/CHO-MATE-Banner.png">
 </p>
 
 ## Application Code Location:
